@@ -13,7 +13,7 @@ except ImportError:
     import tkinter.ttk as ttk
     print('using small tkinter (windows way)')
 
-from DataObject import JsonObject
+from DataObject import Json, Xml
 
 # Main logic and layout
 class MainWindow:
@@ -99,21 +99,13 @@ class MainWindow:
             self.form['content'].delete(*self.form['content'].get_children())
             if self.active['mode'].get() == 0:
                 if self.active['index'] or self.active['index'] == 0:  # must be item selected
-                    self.data = JsonObject(self.active['location']+'/'+self.active['value'])
-                    # self.data = JsonObject()  # TODO: need to change a lot more
-                    self.form['content']['columns'] = self.data.field_list
-                    for column in self.data.field_list:
+                    self.data = Json(self.active['location']+'/'+self.active['value'])
+                    # self.data = Json()
+                    self.form['content']['columns'] = self.data.field_list()
+                    for column in self.form['content']['columns']:
                         self.form['content'].heading(column, text=column, anchor='center')
                         self.form['content'].column(column, stretch="no")
-                    temp = []
-                    if self.data.type == 'arr':
-                        for row in self.data.content:
-                            for column, value in row.items():
-                                temp.append(value)
-                    elif self.data.type == 'dic':
-                        for column, value in self.data.content.items():
-                            temp.append(value)
-                    self.form['content'].insert("", "end", values=temp)
+                    self.form['content'].insert("", "end", values=self.data.values_list())
             elif self.active['mode'].get() == 1:
                 print('editor mode not yet implemented')
 
