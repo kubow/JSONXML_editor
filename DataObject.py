@@ -8,10 +8,10 @@ import xml.etree.ElementTree as ETree
 
 
 class File(object):
-    def __init__(self, debug=True):
+    def __init__(self):
         self.content = ''
         self.type = ''
-        self.debug = debug
+        self.debug = True
 
     def values_list(self):
         v_l = []
@@ -27,17 +27,25 @@ class File(object):
     def field_list(self):
         if self.debug:
             if isinstance(self.content, dict):
-                f_l = list(self.content.keys())
-                print('file is a dictionary with keys:', f_l)
+                if len(self.content) > 1:
+                    f_l = list(self.content.keys())
+                elif isinstance(self.content[next(iter(self.content))], dict):
+                    f_l = list(self.content[next(iter(self.content))].keys())
+                else:
+                    f_l = list(1,2,3)  # what can be extended?
+                print(self.type, 'is a dictionary with keys:', f_l)
             elif isinstance(self.content, list):
                 f_l = list([a for a in self.content[0]])
-                print('file is a array with keys:', f_l)
+                print(self.type, 'is a array with keys:', f_l)
             else:
                 f_l = []
-                print('file is not recognized:', f_l)
+                print(self.type, 'is not recognized:', f_l)
         else:
             if isinstance(self.content, dict):
-                f_l = list(self.content.keys())
+                if len(self.content) > 1:
+                    f_l = list(self.content.keys())
+                else:
+                    f_l = list(self.content[next(iter(self.content))].keys())
             elif isinstance(self.content, list):
                 f_l = list([a for a in self.content[0]])
             else:
@@ -45,12 +53,17 @@ class File(object):
         return f_l 
 
 class Json(File):
-    def __init__(self, source=''):
+    def __init__(self, source='', from_stream=False):
         File.__init__(self)
-        if source:
+        if from_stream:
+            self.type = 'stream'
+            self.content = json.loads(source)
+        elif source:
+            self.type = source
             with open(source, "r", encoding="utf-8") as read_content:
                 self.content = json.load(read_content)  # TODO: need to determine if to use load or loads
         else:
+            self.type = 'random_default'
             self.content = json.loads(random_json())
         
     def export_to(self, location):
@@ -59,11 +72,16 @@ class Json(File):
                 dump.write(json.dumps(self.content))
 
 class Xml(File):
-    def __init__(self, source):
+    def __init__(self, source='', from_stream=False):
         File.__init__(self)
-        if source:
+        if from_stream:
+            self.type = 'stream'
+            self.content = ETree.fromstring(source)
+        elif source:
+            self.type = source
             self.content = ETree.parse(source).getroot()
         else:
+            self.type = 'random_default'
             self.content = ETree.fromstring(random_xml())
 
     def export_to(self, location):
@@ -71,7 +89,7 @@ class Xml(File):
             pass  # for now
         
                 
-def random_json():
+def random_json(not_so_random=0):
     """This function describes types of JSON objects, that come into play
     https://techwithtech.com/json-object-vs-json-array/
     Helps debug process
@@ -79,10 +97,16 @@ def random_json():
     dictionary = '{"manufacturer": "Tesla Inc.", "model": "Tesla S", "engineType": "elecrical", "horsePower": 362}'
     d_with_array = '{"manufacturer": "Tesla Inc.", "model": "Tesla S", "engineType": "elecrical", "horsePower": 362, "battery": ["100 kWh", "90 kWh", "80 kWh"]}'
     array = '[{"manufacturer": "Tesla Inc.", "model": "Tesla S", "engineType": "elecrical", "horsePower": 362}, {"manufacturer": "Tesla Inc. "," model": "Tesla 3 "," engineType": "elecrical", "horsePower": 346}]'
-    return (dictionary, d_with_array, array)[randint(0,2)]
+    if not_so_random:
+        if isinstance(not_so_random, int):
+            return (dictionary, d_with_array, array)[not_so_random-1]
+        else:
+            return ''  # 
+    else:
+        return (dictionary, d_with_array, array)[randint(0,2)]
     # return choice(dictionary, d_with_array, array)
 
-def random_xml():
+def random_xml(not_so_random=0):
     """This function describes types of XML objects, that come into play
     https://techwithtech.com/json-object-vs-json-array/
     Helps debug process
@@ -109,6 +133,9 @@ def random_xml():
         </file>
     </encspot>
     """
-    array = '[{"manufacturer": "Tesla Inc.", "model": "Tesla S", "engineType": "elecrical", "horsePower": 362}, {"manufacturer": "Tesla Inc. "," model": "Tesla 3 "," engineType": "elecrical", "horsePower": 346}]'
-    # return (simple, simple_array, none)[randint(0,2)]
-    return choice(simple, simple_array)
+    if not_so_random == 1:
+        return simple
+    elif not_so_random == 2:
+        return simple_array
+    else:
+        return choice(simple, simple_array)
