@@ -16,12 +16,10 @@ class File(object):
     def values_list(self):
         v_l = []
         if isinstance(self.content, dict):
-            for column, value in self.content.items():
-                v_l.append(value)
+            v_l.extend(value for column, value in self.content.items())
         elif isinstance(self.content, list):
             for row in self.content:
-                for column, value in row.items():
-                    v_l.append(value)
+                v_l.extend(value for column, value in row.items())
         return v_l
 
     def field_list(self):
