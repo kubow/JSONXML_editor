@@ -35,21 +35,20 @@ class File(object):
                     f_l = list(1,2,3)  # what can be extended?
                 print(self.type, 'is a dictionary with keys:', f_l)
             elif isinstance(self.content, list):
-                f_l = list([a for a in self.content[0]])
+                f_l = list(self.content[0])
                 print(self.type, 'is a array with keys:', f_l)
             else:
                 f_l = []
                 print(self.type, 'is not recognized:', f_l)
-        else:
-            if isinstance(self.content, dict):
-                if len(self.content) > 1:
-                    f_l = list(self.content.keys())
-                else:
-                    f_l = list(self.content[next(iter(self.content))].keys())
-            elif isinstance(self.content, list):
-                f_l = list([a for a in self.content[0]])
+        elif isinstance(self.content, dict):
+            if len(self.content) > 1:
+                f_l = list(self.content.keys())
             else:
-                f_l = []
+                f_l = list(self.content[next(iter(self.content))].keys())
+        elif isinstance(self.content, list):
+            f_l = list(self.content[0])
+        else:
+            f_l = []
         return f_l 
 
 class Json(File):
@@ -97,13 +96,13 @@ def random_json(not_so_random=0):
     dictionary = '{"manufacturer": "Tesla Inc.", "model": "Tesla S", "engineType": "elecrical", "horsePower": 362}'
     d_with_array = '{"manufacturer": "Tesla Inc.", "model": "Tesla S", "engineType": "elecrical", "horsePower": 362, "battery": ["100 kWh", "90 kWh", "80 kWh"]}'
     array = '[{"manufacturer": "Tesla Inc.", "model": "Tesla S", "engineType": "elecrical", "horsePower": 362}, {"manufacturer": "Tesla Inc. "," model": "Tesla 3 "," engineType": "elecrical", "horsePower": 346}]'
-    if not_so_random:
-        if isinstance(not_so_random, int):
-            return (dictionary, d_with_array, array)[not_so_random-1]
-        else:
-            return ''  # 
-    else:
+    if not not_so_random:
         return (dictionary, d_with_array, array)[randint(0,2)]
+
+    if isinstance(not_so_random, int):
+        return (dictionary, d_with_array, array)[not_so_random-1]
+    else:
+        return ''  #
     # return choice(dictionary, d_with_array, array)
 
 def random_xml(not_so_random=0):
