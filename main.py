@@ -89,44 +89,41 @@ class MainWindow:
                     self.list['box'].insert('end', file)
             self.active['index'] = ''
             self.await_load = True
-        else:
-            if backup:
-                self.active['location'] = backup  # reverting to previous value
+        elif backup:
+            self.active['location'] = backup  # reverting to previous value
         self.refresh()            
 
     def refresh(self):
-        if self.await_load:
-            self.form['content'].delete(*self.form['content'].get_children())
-            if self.active['mode'].get() == 0:
-                if self.active['index'] or self.active['index'] == 0:  # must be item selected
-                    self.data = Json(self.active['location']+'/'+self.active['value'])
-                    # self.data = Json()
-                    self.form['content']['columns'] = self.data.field_list()
-                    for column in self.form['content']['columns']:
-                        self.form['content'].heading(column, text=column, anchor='center')
-                        self.form['content'].column(column, stretch="no")
-                    self.form['content'].insert("", "end", values=self.data.values_list())
-            elif self.active['mode'].get() == 1:
-                print('editor mode not yet implemented')
+        if not self.await_load:
+            return
+        self.form['content'].delete(*self.form['content'].get_children())
+        if self.active['mode'].get() == 0:
+            if self.active['index'] or self.active['index'] == 0:  # must be item selected
+                self.data = Json(self.active['location']+'/'+self.active['value'])
+                # self.data = Json()
+                self.form['content']['columns'] = self.data.field_list()
+                for column in self.form['content']['columns']:
+                    self.form['content'].heading(column, text=column, anchor='center')
+                    self.form['content'].column(column, stretch="no")
+                self.form['content'].insert("", "end", values=self.data.values_list())
+        elif self.active['mode'].get() == 1:
+            print('editor mode not yet implemented')
 
     def on_select(self, evt):
         w = evt.widget
-        if w.curselection():
-            if w == self.list['box']:  # click in file list
-                self.active['index'] = int(w.curselection()[0])
-                self.active['value'] = w.get(self.active['index'])
-                self.await_load = True
+        if w.curselection() and w == self.list['box']:
+            self.active['index'] = int(w.curselection()[0])
+            self.active['value'] = w.get(self.active['index'])
+            self.await_load = True
         self.refresh()
 
     def prev(self):
-        if self.data.content:
-            if self.active['index'] > 1:
-                self.active['index'] -= 1
+        if self.data.content and self.active['index'] > 1:
+            self.active['index'] -= 1
 
     def next(self):
-        if self.data.content:
-            if self.active['index'] < len(self.data.content):
-                self.active['index'] += 1
+        if self.data.content and self.active['index'] < len(self.data.content):
+            self.active['index'] += 1
 
     def control(self):
         print('onthing really here yet')
